@@ -1,0 +1,38 @@
+name: Publish Package to GitHub Packages
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 코드가 push될 때마다 실행됩니다.
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # GitHub Packages에 쓰기(배포) 권한을 부여합니다.
+
+    steps:
+      # 1. GitHub 리포지토리에서 코드를 체크아웃합니다.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. JDK 17 및 Maven을 설정합니다.
+      #    이 스텝이 자동으로 GitHub Packages 인증을 위한 settings.xml 파일을 생성해줍니다.
+      - name: Set up JDK and Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          # settings.xml을 생성하고 GitHub Packages 서버 정보를 자동으로 설정합니다.
+          # 서버 ID는 'github'으로 기본 설정됩니다 (pom.xml과 일치).
+          # 인증 정보는 아래 env에서 주입된 GITHUB_TOKEN을 사용합니다.
+
+      # 3. Maven을 사용하여 GitHub Packages에 배포합니다.
+      #    -B: 배치 모드(non-interactive)로 실행
+      #    pom.xml에 설정된 <distributionManagement> 정보를 사용하여 배포를 진행합니다.
+      - name: Publish to GitHub Packages
+        run: mvn -B deploy
+        env:
+          # setup-java 액션이 settings.xml을 설정할 때 사용할 인증 토큰
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
