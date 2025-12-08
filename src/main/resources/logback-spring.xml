@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- Spring Boot 기본 Logback 설정을 포함하여 clr 등 기본 기능을 활성화합니다. -->
+    <!-- Spring Boot 기본 Logback 설정을 포함합니다. -->
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <!-- Custom PropertyDefiner를 사용하여 서비스 이름 정의 -->
-    <define name="SERVICE_NAME" class="com.chaekmate.logging.ShortServiceNamePropertyDefiner" />
-
     <!-- prod profile: stdout + JSON 파일 로깅 추가 -->
+    <!-- SERVICE_NAME 변수는 LoggingInitializer에 의해 동적으로 설정됩니다. -->
     <springProfile name="prod">
-        <property name="LOG_HOME" value="/home/backend/be11-team1/logging/logs/${SERVICE_NAME}"/>
-        <property name="DOMAIN_NAME" value="${SERVICE_NAME}-${server.port}"/>
+        <property name="LOG_HOME" value="/home/backend/be11-team1/logging/logs/${SERVICE_NAME:-unknown-service}"/>
+        <property name="DOMAIN_NAME" value="${SERVICE_NAME:-unknown-service}-${server.port}"/>
 
         <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
             <file>${LOG_HOME}/${DOMAIN_NAME}-${PID}.log</file>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <customFields>{"chaekmate-service":"${SERVICE_NAME}"}</customFields>
+                <customFields>{"chaekmate-service":"${SERVICE_NAME:-unknown-service}"}</customFields>
                 <mdc>
                     <includeMdcKeyName>traceId</includeMdcKeyName>
                     <includeMdcKeyName>spanId</includeMdcKeyName>
@@ -32,7 +30,6 @@
         </appender>
 
         <!-- root에 JSON_FILE appender를 추가합니다. -->
-        <!-- base.xml에 이미 CONSOLE appender가 root에 포함되어 있습니다. -->
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="JSON_FILE"/>

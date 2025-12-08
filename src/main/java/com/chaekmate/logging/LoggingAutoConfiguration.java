@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@Import({LogWebMvcConfig.class, SpringEnvironmentHolder.class})
+@Import(LogWebMvcConfig.class)
 public class LoggingAutoConfiguration {
 
 }
